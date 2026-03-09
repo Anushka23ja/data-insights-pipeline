@@ -1,7 +1,7 @@
 // Model performance tab — compares five trained models side by side.
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { modelResults, modelComparison, predictedVsActual } from "@/data/zaraData";
+import { modelResults, modelComparison, predictedVsActual, nnGridSearchResults } from "@/data/zaraData";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, LineChart, Line, ScatterChart, Scatter, Legend,
@@ -126,7 +126,8 @@ const ModelPerformance = () => {
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               The baseline explains only 14.2% of variance, confirming that the relationship
-              between features and sales is not purely linear.
+              between features and sales is not purely linear. No cross-validation is used for
+              the baseline as it has no hyperparameters to tune.
             </p>
           </CardContent>
         </Card>
@@ -145,6 +146,16 @@ const ModelPerformance = () => {
               <MetricBox label="MAE" value={modelResults.decisionTree.metrics.mae} />
               <MetricBox label="RMSE" value={modelResults.decisionTree.metrics.rmse} />
               <MetricBox label="R²" value={modelResults.decisionTree.metrics.r2} />
+            </div>
+            {/* 5-fold cross-validation scores */}
+            <div className="p-3 bg-secondary/50 rounded-lg">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">5-Fold CV R² Scores</p>
+              <div className="flex gap-2 flex-wrap">
+                {modelResults.decisionTree.cvScores.map((s, i) => (
+                  <span key={i} className="font-mono text-xs bg-background px-2 py-1 rounded border border-border">{s.toFixed(3)}</span>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1.5">Mean: {(modelResults.decisionTree.cvScores.reduce((a, b) => a + b) / 5).toFixed(3)}</p>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Modest improvement over baseline. Optimal depth of 5 captures key splits
@@ -168,6 +179,16 @@ const ModelPerformance = () => {
               <MetricBox label="RMSE" value={modelResults.randomForest.metrics.rmse} />
               <MetricBox label="R²" value={modelResults.randomForest.metrics.r2} />
             </div>
+            {/* 5-fold cross-validation scores */}
+            <div className="p-3 bg-secondary/50 rounded-lg">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">5-Fold CV R² Scores</p>
+              <div className="flex gap-2 flex-wrap">
+                {modelResults.randomForest.cvScores.map((s, i) => (
+                  <span key={i} className="font-mono text-xs bg-background px-2 py-1 rounded border border-border">{s.toFixed(3)}</span>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1.5">Mean: {(modelResults.randomForest.cvScores.reduce((a, b) => a + b) / 5).toFixed(3)}</p>
+            </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Ensemble of 100 trees significantly reduces variance. R² = 0.387 is a 172%
               improvement over the linear baseline.
@@ -190,6 +211,16 @@ const ModelPerformance = () => {
               <MetricBox label="MAE" value={modelResults.xgboost.metrics.mae} highlight />
               <MetricBox label="RMSE" value={modelResults.xgboost.metrics.rmse} highlight />
               <MetricBox label="R²" value={modelResults.xgboost.metrics.r2} highlight />
+            </div>
+            {/* 5-fold cross-validation scores */}
+            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">5-Fold CV R² Scores</p>
+              <div className="flex gap-2 flex-wrap">
+                {modelResults.xgboost.cvScores.map((s, i) => (
+                  <span key={i} className="font-mono text-xs bg-background px-2 py-1 rounded border border-primary/30">{s.toFixed(3)}</span>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1.5">Mean: {(modelResults.xgboost.cvScores.reduce((a, b) => a + b) / 5).toFixed(3)}</p>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Gradient boosting captures complex feature interactions and achieves the best
