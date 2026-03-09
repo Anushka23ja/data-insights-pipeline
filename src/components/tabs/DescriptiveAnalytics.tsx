@@ -8,6 +8,8 @@ import {
   priceVsSalesData,
   salesDistribution,
   correlationMatrix,
+  correlationGrid,
+  seasonalDistribution,
 } from "@/data/zaraData";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -137,12 +139,12 @@ const DescriptiveAnalytics = () => {
         </CardContent>
       </Card>
 
-      {/* Four feature-level charts arranged in a 2x2 grid */}
+      {/* Five feature-level charts arranged in a grid */}
       <Card className="chart-container">
         <CardHeader>
           <SectionLabel number="1.3" title="Feature Distributions and Relationships" />
           <CardDescription className="mt-2">
-            Four visualizations exploring how features relate to sales volume
+            Five visualizations exploring how features relate to sales volume
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -228,56 +230,98 @@ const DescriptiveAnalytics = () => {
                 Products above $300 rarely exceed 1,900 units, reflecting price sensitivity.
               </Insight>
             </div>
+
+            {/* Average sales for seasonal vs non-seasonal products */}
+            <div className="lg:col-span-2">
+              <p className="text-sm font-medium text-foreground mb-4">Seasonal vs. Non-Seasonal Average Sales</p>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={seasonalDistribution}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[1500, 1900]} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar dataKey="avgSales" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              <Insight>
+                Non-seasonal products average 1,823 units versus 1,698 for seasonal items.
+                Seasonal items account for 54.8% of the catalog but sell slightly fewer units on average.
+              </Insight>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Pairwise correlation table between features */}
+      {/* Visual correlation heatmap grid */}
       <Card className="chart-container">
         <CardHeader>
-          <SectionLabel number="1.4" title="Correlation Matrix" />
+          <SectionLabel number="1.4" title="Correlation Heatmap" />
           <CardDescription className="mt-2">
             Pairwise Pearson correlations between numerical and encoded features
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Color-coded grid heatmap */}
           <div className="overflow-x-auto">
-            <table className="w-full max-w-2xl mx-auto text-sm">
-              <thead>
-                <tr className="border-b-2 border-border">
-                  <th className="p-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Feature Pair</th>
-                  <th className="p-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">Coefficient</th>
-                  <th className="p-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">Strength</th>
-                </tr>
-              </thead>
-              <tbody>
-                {correlationMatrix.map((row, i) => (
-                  <tr key={i} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
-                    <td className="p-3 font-medium text-foreground">
-                      {row.feature1} / {row.feature2}
-                    </td>
-                    <td className="p-3 text-center">
-                      <span className={`font-mono text-sm ${row.correlation < 0 ? "text-destructive" : "text-chart-3"}`}>
-                        {row.correlation > 0 ? "+" : ""}
-                        {row.correlation.toFixed(2)}
-                      </span>
-                    </td>
-                    <td className="p-3 text-center">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                          Math.abs(row.correlation) > 0.25
-                            ? "bg-primary/10 text-foreground"
-                            : "bg-secondary text-muted-foreground"
-                        }`}
-                      >
-                        {Math.abs(row.correlation) > 0.25 ? "Moderate" : "Weak"}
-                      </span>
-                    </td>
-                  </tr>
+            <div className="inline-block min-w-[500px]">
+              {/* Column headers */}
+              <div className="flex">
+                <div className="w-32 shrink-0" />
+                {correlationGrid.features.map((f) => (
+                  <div key={f} className="w-20 text-center text-[10px] font-mono text-muted-foreground px-1 pb-2 truncate">
+                    {f}
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+              {/* Rows with color-coded cells */}
+              {correlationGrid.features.map((rowFeature, ri) => (
+                <div key={rowFeature} className="flex">
+                  <div className="w-32 shrink-0 text-[10px] font-mono text-muted-foreground flex items-center pr-2 truncate">
+                    {rowFeature}
+                  </div>
+                  {correlationGrid.matrix[ri].map((val, ci) => {
+                    const absVal = Math.abs(val);
+                    const isPositive = val >= 0;
+                    const isDiagonal = ri === ci;
+                    const bgColor = isDiagonal
+                      ? "hsl(var(--primary) / 0.15)"
+                      : isPositive
+                      ? `hsl(173, 50%, 40%, ${absVal * 0.8})`
+                      : `hsl(0, 60%, 55%, ${absVal * 0.8})`;
+                    return (
+                      <div
+                        key={ci}
+                        className="w-20 h-14 flex items-center justify-center border border-border/30 text-xs font-mono font-medium"
+                        style={{ backgroundColor: bgColor }}
+                        title={`${correlationGrid.features[ri]} vs ${correlationGrid.features[ci]}: ${val.toFixed(2)}`}
+                      >
+                        <span className={isDiagonal ? "text-foreground" : absVal > 0.2 ? "text-foreground" : "text-muted-foreground"}>
+                          {val.toFixed(2)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* Color scale legend */}
+          <div className="flex justify-center items-center gap-4 mt-6 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <span className="w-4 h-3 rounded" style={{ backgroundColor: "hsl(0, 60%, 55%, 0.6)" }} />
+              Negative
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-4 h-3 rounded bg-border" />
+              Near zero
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-4 h-3 rounded" style={{ backgroundColor: "hsl(173, 50%, 40%, 0.6)" }} />
+              Positive
+            </div>
+          </div>
+
           <Insight>
             The strongest correlation is between seasonal and promotion status (+0.31), meaning promotions
             are more common during seasonal periods. Price negatively correlates with sales (-0.28).

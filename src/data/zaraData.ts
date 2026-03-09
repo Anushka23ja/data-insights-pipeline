@@ -205,6 +205,35 @@ export const shapBeeswarmData = [
   { feature: "category_jackets", shapValue: -34, featureValue: "low" },
 ];
 
+// Full correlation matrix grid for the heatmap (all feature pairs).
+export const correlationGrid = {
+  features: ["price", "salesVolume", "promotion", "seasonal", "category_jackets", "position_Aisle"],
+  matrix: [
+    [1.0, -0.28, 0.08, 0.12, 0.15, -0.06],
+    [-0.28, 1.0, -0.22, -0.15, 0.11, 0.14],
+    [0.08, -0.22, 1.0, 0.31, -0.05, 0.02],
+    [0.12, -0.15, 0.31, 1.0, 0.09, -0.03],
+    [0.15, 0.11, -0.05, 0.09, 1.0, 0.07],
+    [-0.06, 0.14, 0.02, -0.03, 0.07, 1.0],
+  ],
+};
+
+// Neural network grid search results across hidden layer sizes and learning rates.
+export const nnGridSearchResults = [
+  { hiddenLayers: "(64,)", lr: 0.001, dropout: 0.0, valR2: 0.312, valMAE: 534.2 },
+  { hiddenLayers: "(64,)", lr: 0.01, dropout: 0.0, valR2: 0.289, valMAE: 551.8 },
+  { hiddenLayers: "(64,)", lr: 0.001, dropout: 0.2, valR2: 0.298, valMAE: 542.1 },
+  { hiddenLayers: "(128, 64)", lr: 0.001, dropout: 0.0, valR2: 0.432, valMAE: 478.5 },
+  { hiddenLayers: "(128, 64)", lr: 0.01, dropout: 0.0, valR2: 0.398, valMAE: 498.3 },
+  { hiddenLayers: "(128, 64)", lr: 0.001, dropout: 0.2, valR2: 0.415, valMAE: 487.6 },
+  { hiddenLayers: "(128, 64)", lr: 0.001, dropout: 0.5, valR2: 0.378, valMAE: 512.4 },
+  { hiddenLayers: "(256, 128, 64)", lr: 0.001, dropout: 0.0, valR2: 0.421, valMAE: 483.9 },
+  { hiddenLayers: "(256, 128, 64)", lr: 0.01, dropout: 0.0, valR2: 0.356, valMAE: 518.7 },
+  { hiddenLayers: "(256, 128, 64)", lr: 0.001, dropout: 0.2, valR2: 0.412, valMAE: 489.2 },
+  { hiddenLayers: "(256, 128, 64)", lr: 0.001, dropout: 0.5, valR2: 0.365, valMAE: 521.1 },
+  { hiddenLayers: "(64, 32)", lr: 0.001, dropout: 0.0, valR2: 0.368, valMAE: 508.6 },
+];
+
 // Waterfall breakdown for a single high-price product prediction.
 export const waterfallExample = {
   productName: "CROPPED LEATHER JACKET",
