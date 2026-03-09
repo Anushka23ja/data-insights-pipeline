@@ -139,12 +139,12 @@ const DescriptiveAnalytics = () => {
         </CardContent>
       </Card>
 
-      {/* Four feature-level charts arranged in a 2x2 grid */}
+      {/* Five feature-level charts arranged in a grid */}
       <Card className="chart-container">
         <CardHeader>
           <SectionLabel number="1.3" title="Feature Distributions and Relationships" />
           <CardDescription className="mt-2">
-            Four visualizations exploring how features relate to sales volume
+            Five visualizations exploring how features relate to sales volume
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -228,6 +228,24 @@ const DescriptiveAnalytics = () => {
               <Insight>
                 A negative correlation (r = -0.28) indicates lower-priced products sell more.
                 Products above $300 rarely exceed 1,900 units, reflecting price sensitivity.
+              </Insight>
+            </div>
+
+            {/* Average sales for seasonal vs non-seasonal products */}
+            <div className="lg:col-span-2">
+              <p className="text-sm font-medium text-foreground mb-4">Seasonal vs. Non-Seasonal Average Sales</p>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={seasonalDistribution}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[1500, 1900]} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar dataKey="avgSales" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              <Insight>
+                Non-seasonal products average 1,823 units versus 1,698 for seasonal items.
+                Seasonal items account for 54.8% of the catalog but sell slightly fewer units on average.
               </Insight>
             </div>
           </div>
