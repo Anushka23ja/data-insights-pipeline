@@ -8,6 +8,8 @@ import {
   priceVsSalesData,
   salesDistribution,
   correlationMatrix,
+  correlationGrid,
+  seasonalDistribution,
 } from "@/data/zaraData";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
