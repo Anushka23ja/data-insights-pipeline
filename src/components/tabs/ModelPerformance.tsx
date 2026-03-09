@@ -264,7 +264,72 @@ const ModelPerformance = () => {
         </CardContent>
       </Card>
 
-      {/* Scatter of predicted vs actual sales for the best model */}
+      {/* Bonus: Neural network hyperparameter grid search results */}
+      <Card className="chart-container border-2 border-dashed border-accent">
+        <CardHeader>
+          <SectionLabel number="Bonus" title="MLP Hyperparameter Tuning (Grid Search)" />
+          <CardDescription className="mt-2">
+            Grid search over hidden layer sizes, learning rates, and dropout rates. Best config highlighted.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b-2 border-border">
+                  <th className="p-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Hidden Layers</th>
+                  <th className="p-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">Learning Rate</th>
+                  <th className="p-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">Dropout</th>
+                  <th className="p-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">Val R²</th>
+                  <th className="p-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">Val MAE</th>
+                </tr>
+              </thead>
+              <tbody>
+                {nnGridSearchResults
+                  .slice()
+                  .sort((a, b) => b.valR2 - a.valR2)
+                  .map((row, i) => {
+                    const isBest = i === 0;
+                    return (
+                      <tr key={i} className={`border-b border-border/50 transition-colors ${isBest ? "bg-primary/5" : "hover:bg-secondary/30"}`}>
+                        <td className="p-3 font-mono text-xs text-foreground">
+                          {row.hiddenLayers}
+                          {isBest && <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded">Best</span>}
+                        </td>
+                        <td className="p-3 text-center font-mono text-xs">{row.lr}</td>
+                        <td className="p-3 text-center font-mono text-xs">{row.dropout}</td>
+                        <td className="p-3 text-center font-mono text-xs font-bold">{row.valR2.toFixed(3)}</td>
+                        <td className="p-3 text-center font-mono text-xs">{row.valMAE.toFixed(1)}</td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Bar chart of grid search R² results */}
+          <div className="mt-6">
+            <p className="text-sm font-medium text-foreground mb-3">Validation R² by Configuration</p>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={nnGridSearchResults.slice().sort((a, b) => b.valR2 - a.valR2)}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="hiddenLayers" stroke="hsl(var(--muted-foreground))" fontSize={9} angle={-25} textAnchor="end" height={60} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0.25, 0.5]} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => value.toFixed(3)} />
+                <Bar dataKey="valR2" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} name="Val R²" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="mt-4 p-4 bg-secondary/50 rounded-lg border-l-2 border-muted-foreground/30">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              The best configuration is (128, 64) with lr=0.001 and no dropout (R² = 0.432).
+              Larger architectures like (256, 128, 64) overfit slightly. High dropout (0.5) hurts
+              performance on this small dataset. Learning rate 0.01 is too aggressive for all architectures.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
       <Card className="chart-container">
         <CardHeader>
           <CardTitle className="font-display">Predicted vs. Actual Sales — XGBoost (Test Set)</CardTitle>
