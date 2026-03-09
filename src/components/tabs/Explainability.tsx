@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { shapValues, waterfallExample, datasetStats } from "@/data/zaraData";
+import { shapValues, shapBeeswarmData, waterfallExample, datasetStats } from "@/data/zaraData";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
@@ -128,7 +128,81 @@ const Explainability = () => {
         </CardContent>
       </Card>
 
-      {/* Plain-language interpretation for stakeholders */}
+      {/* SHAP Beeswarm / Summary Plot */}
+      <Card className="chart-container">
+        <CardHeader>
+          <SectionLabel number="3.1b" title="SHAP Summary Plot (Beeswarm)" />
+          <CardDescription className="mt-2">
+            Each dot is one prediction. Position on x-axis shows SHAP value (impact on prediction).
+            Color indicates the original feature value (high = red, low = blue).
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Group beeswarm data by feature */}
+            {["price", "productPosition_Aisle", "promotion", "seasonal", "category_jackets"].map((feature) => {
+              const points = shapBeeswarmData.filter(d => d.feature === feature);
+              if (points.length === 0) return null;
+              const maxAbs = Math.max(...shapBeeswarmData.map(d => Math.abs(d.shapValue)));
+              return (
+                <div key={feature} className="flex items-center gap-4">
+                  <span className="text-xs font-mono text-muted-foreground w-44 text-right shrink-0 truncate">{feature}</span>
+                  <div className="flex-1 relative h-8 bg-secondary/30 rounded overflow-hidden">
+                    {/* Center line at SHAP=0 */}
+                    <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border" />
+                    {points.map((p, i) => {
+                      const xPercent = 50 + (p.shapValue / maxAbs) * 45;
+                      const yOffset = (i - (points.length - 1) / 2) * 8;
+                      return (
+                        <div
+                          key={i}
+                          className="absolute w-3 h-3 rounded-full border border-background/50"
+                          style={{
+                            left: `${xPercent}%`,
+                            top: `calc(50% + ${yOffset}px)`,
+                            transform: "translate(-50%, -50%)",
+                            backgroundColor: p.featureValue === "high" ? "hsl(0, 65%, 55%)" : "hsl(220, 70%, 55%)",
+                          }}
+                          title={`${feature}: SHAP=${p.shapValue}, value=${p.featureValue}`}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+            {/* Axis labels */}
+            <div className="flex items-center gap-4">
+              <span className="w-44 shrink-0" />
+              <div className="flex-1 flex justify-between text-xs text-muted-foreground px-1">
+                <span>← Decreases sales</span>
+                <span>Increases sales →</span>
+              </div>
+            </div>
+            {/* Color legend */}
+            <div className="flex justify-center gap-8 mt-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "hsl(0, 65%, 55%)" }} />
+                High feature value
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "hsl(220, 70%, 55%)" }} />
+                Low feature value
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 p-4 bg-secondary/50 rounded-lg border-l-2 border-muted-foreground/30">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              The beeswarm confirms price's dominant role: high prices (red dots) cluster strongly on the negative side,
+              while low prices push predictions up. Aisle positioning consistently adds positive SHAP values.
+              Promotion shows a clear negative pattern when active (high = red), supporting the hypothesis that
+              promotions target underperforming products rather than causing lower sales.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="chart-container border-l-4 border-l-primary">
         <CardHeader>
           <CardTitle className="font-display">Interpretation for Decision-Makers</CardTitle>
